@@ -1,10 +1,24 @@
 // 当前文件只保留最小的 Forge 开发、构建和运行配置。
+// 正式环境需要 refmap 才能把 Mixin 目标映射到 SRG 名
+buildscript {
+    repositories {
+        maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
+    }
+}
+
 plugins {
     id 'eclipse'
     id 'idea'
     id 'maven-publish'
     id 'net.minecraftforge.gradle' version '[6.0,6.2)'
 }
+
+// 构建时生成 Mixin refmap
+apply plugin: 'org.spongepowered.mixin'
 
 version = project.mod_version
 group = project.mod_group_id
@@ -24,6 +38,9 @@ minecraft {
             workingDirectory project.file('run')
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
+            property 'mixin.env.remapRefMap', 'true'
+            property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
+            args '-mixin.config=hptlib.mixins.json'
 
             mods {
                 "${project.mod_id}" {
@@ -65,6 +82,11 @@ repositories {
 
 }
 
+// 把 refmap 写入 JAR，供正式环境 Mixin 使用
+mixin {
+    add sourceSets.main, "${project.mod_id}.refmap.json"
+}
+
 dependencies {
     minecraft "net.minecraftforge:forge:${project.minecraft_version}-${project.forge_version}"
 
@@ -75,6 +97,9 @@ dependencies {
     // JEI 只提供编译 API 和开发客户端运行时，不打入 HPTlib JAR。
     compileOnly fg.deobf("curse.maven:jei-238222:${project.jei_curseforge_file_id}")
     runtimeOnly fg.deobf("curse.maven:jei-238222:${project.jei_curseforge_file_id}")
+
+    // 生成 Mixin refmap 的注解处理器
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 }
 
 tasks.named('processResources', ProcessResources).configure {
@@ -109,15 +134,13 @@ tasks.named('jar', Jar).configure {
                 'Specification-Version': '1',
                 'Implementation-Title': project.name,
                 'Implementation-Version': project.jar.archiveVersion,
-                'Implementation-Vendor': project.mod_authors
+                'Implementation-Vendor': project.mod_authors,
+                'MixinConfigs': 'hptlib.mixins.json'
         ])
     }
 }
 
-// 保留 build/libs 中的映射 JAR 供 Composite Build 开发运行使用。
-tasks.named('build').configure {
-    finalizedBy 'reobfJar'
-}
+// MixinGradle 已把 reobfJar 挂到 assemble，不再额外 finalizedBy，避免循环依赖。
 
 publishing {
     publications {
