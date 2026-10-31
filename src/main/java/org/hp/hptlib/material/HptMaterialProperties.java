@@ -253,8 +253,8 @@ public final class HptMaterialProperties {
                     int index = indexOf(merged, entry);
                     if (index < 0) {
                         merged.add(entry);
-                    } else if (merged.get(index).getLevel() < entry.getLevel()) {
-                        merged.set(index, entry);
+                    } else {
+                        merged.set(index, new ModifierEntry(entry.getId(), merged.get(index).getLevel() + entry.getLevel()));
                     }
                 }
                 builder.setTraits(formula.getKey(), List.copyOf(merged));
