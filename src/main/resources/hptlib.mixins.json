@@ -6,6 +6,7 @@
   "refmap": "hptlib.refmap.json",
   "mixins": [
     "MaterialStatsManagerMixin",
+    "MaterialStatsModuleMixin",
     "MaterialTraitsBuilderAccessor",
     "MaterialTraitsManagerMixin"
   ],

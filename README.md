@@ -73,6 +73,26 @@ $env:JAVA_HOME = 'C:\Users\30819\.jdks\ms-17.0.18'
 - **分段字段**：先用 `score` 按同样的规则算出分数，再在 `levels` 里取不超过该分数的最高一档。
 - **特性**：`level` 算出后向下取整，小于 1 时不添加；`max` 限制最高等级。
 
+### 部件公式
+
+路径：`data/<部件命名空间>/tinkering/part_formulas/<部件路径>.json`，按部件物品 ID 命名，匠魂原版部件也可以写。
+
+```json
+{
+  "stats": [
+    { "stat": "tconstruct:attack_damage", "op": "add", "value": { "hardness": 0.5 } }
+  ],
+  "traits": [
+    { "modifier": "tconstruct:lustrous", "level": { "hardness": 0.2 }, "max": 2 }
+  ]
+}
+```
+
+- **作用时机**：工具计算属性时（注入 `MaterialStatsModule.addToolStats`、`addTraits`），按每个部件所用材料的三围，在材料属性之外额外加成。
+- **运算方式**：`op` 可选 `base`、`add`、`percent`、`multiply`，算出的值会乘上部件倍率。
+- **生效条件**：只对按部件定义的工具生效；部件所用材料没有三围时，不加成。
+- **客户端同步**：工具在客户端也会重算属性，所以服务端会在同步数据包时（`OnDatapackSyncEvent`），通过 `hptlib:material_properties` 通道把三围和部件公式发给客户端。
+
 ### 合并规则
 
 - **生成范围**：每个填了三围的材料，会对每个写了公式的属性类型生成数据，`exclude` 排除的除外。
@@ -88,6 +108,8 @@ $env:JAVA_HOME = 'C:\Users\30819\.jdks\ms-17.0.18'
 - `getAll()`
 - `getFormula(MaterialStatsId)`
 - `getFormulas()`
+- `getPartFormula(ResourceLocation)`
+- `getPartFormulas()`
 
 ## 让其他项目直接依赖
 

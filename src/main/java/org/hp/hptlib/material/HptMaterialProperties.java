@@ -3,6 +3,7 @@ package org.hp.hptlib.material;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.logging.LogUtils;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -15,6 +16,10 @@ import slimeknights.tconstruct.library.materials.stats.MaterialStatType;
 import slimeknights.tconstruct.library.materials.stats.MaterialStatsId;
 import slimeknights.tconstruct.library.materials.traits.MaterialTraits;
 import slimeknights.tconstruct.library.modifiers.ModifierEntry;
+import slimeknights.tconstruct.library.tools.helper.ModifierBuilder;
+import slimeknights.tconstruct.library.tools.nbt.MaterialNBT;
+import slimeknights.tconstruct.library.tools.part.IToolPart;
+import slimeknights.tconstruct.library.tools.stat.ModifierStatsBuilder;
 
 import java.io.Reader;
 import java.util.ArrayList;
@@ -30,10 +35,14 @@ import java.util.function.Function;
 public final class HptMaterialProperties {
     public static final String PROPERTIES_FOLDER = "tinkering/material_properties";
     public static final String FORMULAS_FOLDER = "tinkering/stat_formulas";
+    public static final String PART_FORMULAS_FOLDER = "tinkering/part_formulas";
     private static final Logger LOGGER = LogUtils.getLogger();
 
     private static volatile Map<MaterialId, MaterialProperties> properties = Map.of();
     private static volatile Map<MaterialStatsId, StatFormula> formulas = Map.of();
+    private static volatile Map<ResourceLocation, PartFormula> partFormulas = Map.of();
+    private static volatile Map<ResourceLocation, JsonObject> rawProperties = Map.of();
+    private static volatile Map<ResourceLocation, JsonObject> rawPartFormulas = Map.of();
     private static ResourceManager loadedFrom;
 
     private HptMaterialProperties() {}
@@ -54,18 +63,64 @@ public final class HptMaterialProperties {
         return formulas;
     }
 
+    public static PartFormula getPartFormula(ResourceLocation part) {
+        return partFormulas.get(part);
+    }
+
+    public static Map<ResourceLocation, PartFormula> getPartFormulas() {
+        return partFormulas;
+    }
+
+    public static Map<ResourceLocation, JsonObject> getRawProperties() {
+        return rawProperties;
+    }
+
+    public static Map<ResourceLocation, JsonObject> getRawPartFormulas() {
+        return rawPartFormulas;
+    }
+
+    public static synchronized void acceptSync(Map<ResourceLocation, JsonObject> syncedProperties, Map<ResourceLocation, JsonObject> syncedPartFormulas) {
+        Map<MaterialId, MaterialProperties> newProperties = new LinkedHashMap<>();
+        syncedProperties.forEach((id, json) -> newProperties.put(new MaterialId(id), MaterialProperties.parse(json)));
+        Map<ResourceLocation, PartFormula> newPartFormulas = new LinkedHashMap<>();
+        syncedPartFormulas.forEach((id, json) -> {
+            try {
+                newPartFormulas.put(id, PartFormula.parse(json, "Part formula " + id));
+            } catch (RuntimeException e) {
+                LOGGER.error("Failed to read synced part formula {}", id, e);
+            }
+        });
+        properties = Collections.unmodifiableMap(newProperties);
+        partFormulas = Collections.unmodifiableMap(newPartFormulas);
+        rawProperties = Map.copyOf(syncedProperties);
+        rawPartFormulas = Map.copyOf(syncedPartFormulas);
+    }
+
     private static synchronized void load(ResourceManager manager) {
         if (loadedFrom == manager) {
             return;
         }
         Map<MaterialId, MaterialProperties> newProperties = new LinkedHashMap<>();
-        readFolder(manager, PROPERTIES_FOLDER, (id, json) -> newProperties.put(new MaterialId(id), MaterialProperties.parse(json)));
+        Map<ResourceLocation, JsonObject> newRawProperties = new LinkedHashMap<>();
+        readFolder(manager, PROPERTIES_FOLDER, (id, json) -> {
+            newProperties.put(new MaterialId(id), MaterialProperties.parse(json));
+            newRawProperties.put(id, json);
+        });
         Map<MaterialStatsId, StatFormula> newFormulas = new LinkedHashMap<>();
         readFolder(manager, FORMULAS_FOLDER, (id, json) -> newFormulas.put(new MaterialStatsId(id), StatFormula.parse(json, "Stat formula " + id)));
+        Map<ResourceLocation, PartFormula> newPartFormulas = new LinkedHashMap<>();
+        Map<ResourceLocation, JsonObject> newRawPartFormulas = new LinkedHashMap<>();
+        readFolder(manager, PART_FORMULAS_FOLDER, (id, json) -> {
+            newPartFormulas.put(id, PartFormula.parse(json, "Part formula " + id));
+            newRawPartFormulas.put(id, json);
+        });
         properties = Collections.unmodifiableMap(newProperties);
         formulas = Collections.unmodifiableMap(newFormulas);
+        partFormulas = Collections.unmodifiableMap(newPartFormulas);
+        rawProperties = Collections.unmodifiableMap(newRawProperties);
+        rawPartFormulas = Collections.unmodifiableMap(newRawPartFormulas);
         loadedFrom = manager;
-        LOGGER.info("Loaded material properties for {} materials and {} stat formulas", newProperties.size(), newFormulas.size());
+        LOGGER.info("Loaded material properties for {} materials, {} stat formulas and {} part formulas", newProperties.size(), newFormulas.size(), newPartFormulas.size());
     }
 
     private static void readFolder(ResourceManager manager, String folder, BiConsumer<ResourceLocation, JsonObject> consumer) {
@@ -174,6 +229,50 @@ public final class HptMaterialProperties {
             }
         }
         LOGGER.info("Applied trait formulas to {} material stat entries", count);
+    }
+
+    public static void applyPartStats(List<IToolPart> parts, MaterialNBT materials, float[] scales, ModifierStatsBuilder builder) {
+        if (partFormulas.isEmpty()) {
+            return;
+        }
+        int max = Math.min(parts.size(), materials.size());
+        for (int i = 0; i < max; i++) {
+            PartFormula formula = partFormulas.get(BuiltInRegistries.ITEM.getKey(parts.get(i).asItem()));
+            if (formula == null) {
+                continue;
+            }
+            MaterialProperties material = properties.get(materials.get(i).getId());
+            if (material == null) {
+                continue;
+            }
+            float scale = i < scales.length ? scales[i] : 1;
+            for (PartFormula.StatBonus bonus : formula.stats()) {
+                bonus.apply(builder, material.values(), scale);
+            }
+        }
+    }
+
+    public static void applyPartTraits(List<IToolPart> parts, MaterialNBT materials, ModifierBuilder builder) {
+        if (partFormulas.isEmpty()) {
+            return;
+        }
+        int max = Math.min(parts.size(), materials.size());
+        for (int i = 0; i < max; i++) {
+            PartFormula formula = partFormulas.get(BuiltInRegistries.ITEM.getKey(parts.get(i).asItem()));
+            if (formula == null || formula.traits().isEmpty()) {
+                continue;
+            }
+            MaterialProperties material = properties.get(materials.get(i).getId());
+            if (material == null) {
+                continue;
+            }
+            for (StatFormula.TraitFormula trait : formula.traits()) {
+                int level = trait.compute(material.values());
+                if (level >= 1) {
+                    builder.add(new ModifierEntry(trait.modifier(), level));
+                }
+            }
+        }
     }
 
     private static int indexOf(List<ModifierEntry> entries, ModifierEntry entry) {
