@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -155,6 +156,11 @@ public final class HptMaterialProperties {
                     LOGGER.warn("Stat formula {} writes field '{}', which is not a default field of this stat type (known: {})", formula.getKey(), field, known);
                 }
             }
+            Set<String> missing = new LinkedHashSet<>(known);
+            missing.removeAll(formula.getValue().fields().keySet());
+            if (!missing.isEmpty() && properties.values().stream().anyMatch(MaterialProperties::replace)) {
+                LOGGER.warn("Stat formula {} does not define fields {}, materials in replace mode will use the stat type defaults for them", formula.getKey(), missing);
+            }
         }
         int count = 0;
         for (Map.Entry<MaterialId, MaterialProperties> material : properties.entrySet()) {
@@ -163,7 +169,9 @@ public final class HptMaterialProperties {
                 if (material.getValue().exclude().contains(formula.getKey())) {
                     continue;
                 }
-                JsonObject stats = map.computeIfAbsent(material.getKey(), id -> new HashMap<>()).computeIfAbsent(formula.getKey(), id -> new JsonObject());
+                Map<ResourceLocation, JsonObject> materialStats = map.computeIfAbsent(material.getKey(), id -> new HashMap<>());
+                JsonObject stats = material.getValue().replace() ? new JsonObject() : materialStats.computeIfAbsent(formula.getKey(), id -> new JsonObject());
+                materialStats.put(formula.getKey(), stats);
                 for (Map.Entry<String, FieldFormula> field : formula.getValue().fields().entrySet()) {
                     if (!stats.has(field.getKey())) {
                         stats.add(field.getKey(), field.getValue().compute(values));

@@ -12,7 +12,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
-public record MaterialProperties(Map<String, Double> values, Set<MaterialStatsId> exclude) {
+public record MaterialProperties(Map<String, Double> values, Set<MaterialStatsId> exclude, boolean replace) {
     public static final String HARDNESS = "hardness";
     public static final String DENSITY = "density";
     public static final String TOUGHNESS = "toughness";
@@ -31,7 +31,7 @@ public record MaterialProperties(Map<String, Double> values, Set<MaterialStatsId
         for (JsonElement element : GsonHelper.getAsJsonArray(json, "exclude", new JsonArray())) {
             exclude.add(new MaterialStatsId(GsonHelper.convertToString(element, "exclude")));
         }
-        return new MaterialProperties(java.util.Collections.unmodifiableMap(values), Set.copyOf(exclude));
+        return new MaterialProperties(java.util.Collections.unmodifiableMap(values), Set.copyOf(exclude), GsonHelper.getAsBoolean(json, "replace", false));
     }
 
     public double get(String key) {
