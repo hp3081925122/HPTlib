@@ -11,7 +11,10 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.hp.hptlib.material.MaterialPropertiesNetwork;
 import org.hp.hptlib.material.MaterialPropertiesTooltip;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.StructureTags;
 import org.hp.hptlib.structure.StructureEyeModifier;
+import org.hp.hptlib.structure.StructureEyeRegistry;
 import org.hp.hptlib.structure.StructureEyeModifierRecipe;
 import slimeknights.mantle.recipe.helper.LoadableRecipeSerializer;
 import slimeknights.tconstruct.library.modifiers.ModifierId;
@@ -37,6 +40,7 @@ public final class Hptlib {
         RECIPE_SERIALIZERS.register(modEventBus);
         modEventBus.addListener(this::registerModifiers);
         MaterialPropertiesNetwork.register();
+        StructureEyeRegistry.register(new ResourceLocation("minecraft", "ender_eye"), StructureTags.EYE_OF_ENDER_LOCATED, "structure_eye.hptlib.target.ender_eye");
         if (FMLEnvironment.dist == Dist.CLIENT) {
             MaterialPropertiesTooltip.register();
         }

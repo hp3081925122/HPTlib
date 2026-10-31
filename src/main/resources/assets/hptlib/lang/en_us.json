@@ -1,7 +1,7 @@
 {
   "modifier.hptlib.structure_eye": "Structure Teleport",
   "modifier.hptlib.structure_eye.flavor": "Find structures with a bound structure eye",
-  "modifier.hptlib.structure_eye.description": "Staff interaction: Locate and teleport to the bound structure; use another structure eye in the Tinkers' station to change the target.",
+  "modifier.hptlib.structure_eye.description": "Staff interaction: Locate and teleport to the bound structure; use another structure eye in the Tinker Station to change the target.",
   "modifier.hptlib.structure_eye.bound": "Bound: %s",
   "modifier.hptlib.structure_eye.selected": "Current target: %s",
   "recipe.hptlib.structure_eye.invalid_eye": "This structure eye has no registered structure target.",
@@ -10,5 +10,6 @@
   "message.hptlib.structure_eye.not_found": "Could not find %s nearby in this dimension.",
   "message.hptlib.structure_eye.no_safe_position": "Found %s, but no safe landing position was available nearby.",
   "tooltip.hptlib.material_properties": "Hardness %s · Density %s · Toughness %s",
-  "tooltip.hptlib.part_bonus": "Part bonus:"
+  "tooltip.hptlib.part_bonus": "Part bonus:",
+  "structure_eye.hptlib.target.ender_eye": "Eye of Ender (Stronghold)"
 }

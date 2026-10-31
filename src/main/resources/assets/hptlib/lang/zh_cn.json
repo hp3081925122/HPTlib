@@ -1,7 +1,7 @@
 {
   "modifier.hptlib.structure_eye": "结构跃迁",
   "modifier.hptlib.structure_eye.flavor": "使用绑定的定位眼睛寻找结构",
-  "modifier.hptlib.structure_eye.description": "手杖右键：定位并传送至当前绑定的结构；在匠魂工坊中使用其他定位眼睛可更换目标结构。",
+  "modifier.hptlib.structure_eye.description": "手杖右键：定位并传送至当前绑定的结构；在工匠站中使用其他定位眼睛可更换目标结构。",
   "modifier.hptlib.structure_eye.bound": "绑定：%s",
   "modifier.hptlib.structure_eye.selected": "当前定位：%s",
   "recipe.hptlib.structure_eye.invalid_eye": "这只定位眼睛没有注册对应的结构。",
@@ -10,5 +10,6 @@
   "message.hptlib.structure_eye.not_found": "当前维度附近找不到%s。",
   "message.hptlib.structure_eye.no_safe_position": "找到了%s，但附近没有安全落点。",
   "tooltip.hptlib.material_properties": "硬度 %s · 密度 %s · 韧性 %s",
-  "tooltip.hptlib.part_bonus": "部件加成："
+  "tooltip.hptlib.part_bonus": "部件加成：",
+  "structure_eye.hptlib.target.ender_eye": "末影之眼（要塞）"
 }
