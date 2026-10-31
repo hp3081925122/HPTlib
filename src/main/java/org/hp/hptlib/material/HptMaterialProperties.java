@@ -35,7 +35,8 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 public final class HptMaterialProperties {
-    public static final String PROPERTIES_FOLDER = "tinkering/material_properties";
+    public static final String STATS_FOLDER = "tinkering/materials/stats";
+    public static final String PROPERTIES_KEY = "properties";
     public static final String FORMULAS_FOLDER = "tinkering/stat_formulas";
     public static final String PART_FORMULAS_FOLDER = "tinkering/part_formulas";
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -105,10 +106,32 @@ public final class HptMaterialProperties {
         }
         Map<MaterialId, MaterialProperties> newProperties = new LinkedHashMap<>();
         Map<ResourceLocation, JsonObject> newRawProperties = new LinkedHashMap<>();
-        readFolder(manager, PROPERTIES_FOLDER, (id, json) -> {
-            newProperties.put(new MaterialId(id), MaterialProperties.parse(json));
-            newRawProperties.put(id, json);
-        });
+        for (Map.Entry<ResourceLocation, List<Resource>> entry : manager.listResourceStacks(STATS_FOLDER, path -> path.getPath().endsWith(".json")).entrySet()) {
+            String path = entry.getKey().getPath();
+            ResourceLocation id = new ResourceLocation(entry.getKey().getNamespace(), path.substring(STATS_FOLDER.length() + 1, path.length() - ".json".length()));
+            JsonObject merged = new JsonObject();
+            boolean found = false;
+            for (Resource resource : entry.getValue()) {
+                try (Reader reader = resource.openAsReader()) {
+                    JsonObject file = GsonHelper.convertToJsonObject(JsonParser.parseReader(reader), id.toString());
+                    if (file.has(PROPERTIES_KEY)) {
+                        GsonHelper.getAsJsonObject(file, PROPERTIES_KEY).entrySet().forEach(property -> merged.add(property.getKey(), property.getValue()));
+                        found = true;
+                    }
+                } catch (Exception e) {
+                    LOGGER.error("Failed to load material properties of {} from data pack {}", id, resource.sourcePackId(), e);
+                }
+            }
+            if (!found) {
+                continue;
+            }
+            try {
+                newProperties.put(new MaterialId(id), MaterialProperties.parse(merged));
+                newRawProperties.put(id, merged);
+            } catch (RuntimeException e) {
+                LOGGER.error("Failed to parse material properties of {}", id, e);
+            }
+        }
         Map<MaterialStatsId, StatFormula> newFormulas = new LinkedHashMap<>();
         readFolder(manager, FORMULAS_FOLDER, (id, json) -> newFormulas.put(new MaterialStatsId(id), StatFormula.parse(json, "Stat formula " + id)));
         Map<ResourceLocation, PartFormula> newPartFormulas = new LinkedHashMap<>();

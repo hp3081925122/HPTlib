@@ -32,15 +32,20 @@ $env:JAVA_HOME = 'C:\Users\30819\.jdks\ms-17.0.18'
 
 ### 材料三围
 
-路径：`data/<材料命名空间>/tinkering/material_properties/<材料路径>.json`
+写在匠魂的材料属性文件 `data/<材料命名空间>/tinkering/materials/stats/<材料路径>.json` 里，与 `stats` 并列的 `properties` 字段。匠魂只读取 `stats`，会忽略 `properties`；只写 `properties` 不写 `stats` 也可以。
 
 ```json
 {
-  "hardness": 4,
-  "density": 5,
-  "toughness": 9,
-  "exclude": ["tconstruct:limb"],
-  "replace": true
+  "properties": {
+    "hardness": 4,
+    "density": 5,
+    "toughness": 9,
+    "exclude": ["tconstruct:limb"],
+    "replace": true
+  },
+  "stats": {
+    "tconstruct:head": { "melee_attack": 10 }
+  }
 }
 ```
 
@@ -101,7 +106,8 @@ $env:JAVA_HOME = 'C:\Users\30819\.jdks\ms-17.0.18'
 - **生成范围**：每个填了三围的材料，会对每个写了公式的属性类型生成数据，`exclude` 排除的除外。
 - **手写字段优先**：材料的 `tinkering/materials/stats` 里已经写了的字段保持不变，公式只补没写的字段；开启 `replace` 的材料例外，见上文。
 - **特性追加**：公式算出的特性会追加到该属性类型现有的特性列表后面。现有列表依次取第一个存在的：该类型的 perStat、回退类型的 perStat、default。如果列表里已有同一个词条，取较高的等级。
-- **整份覆盖**：两个文件路径相同时，高优先级数据包的文件会整份覆盖低优先级的。
+- **多个数据包**：材料属性文件和匠魂一样按数据包优先级合并，`properties` 里的每个键由优先级更高的数据包覆盖，没写的键保留低优先级的值。给已有材料加三围时，新建一个只含 `properties` 的属性文件即可，不会覆盖匠魂原有的属性。
+- **整份覆盖**：属性公式和部件公式文件路径相同时，高优先级数据包的文件会整份覆盖低优先级的。
 - **属性类型本身不能用数据包定义**：属性类型必须在启动时注册，因为客户端要靠它解码材料同步包。
 
 ### Java API
