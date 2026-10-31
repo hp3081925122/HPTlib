@@ -1,0 +1,12 @@
+{
+  "modifier.hptlib.structure_eye": "结构跃迁",
+  "modifier.hptlib.structure_eye.flavor": "使用绑定的定位眼睛寻找结构",
+  "modifier.hptlib.structure_eye.description": "手杖右键：定位并传送至当前绑定的结构；在匠魂工坊中使用其他定位眼睛可更换目标结构。",
+  "modifier.hptlib.structure_eye.bound": "绑定：%s",
+  "modifier.hptlib.structure_eye.selected": "当前定位：%s",
+  "recipe.hptlib.structure_eye.invalid_eye": "这只定位眼睛没有注册对应的结构。",
+  "recipe.hptlib.structure_eye.already_bound": "%s 已经绑定了 %s。",
+  "message.hptlib.structure_eye.no_target": "这把手杖没有有效的结构定位目标，请重新使用一只定位眼睛进行强化。",
+  "message.hptlib.structure_eye.not_found": "当前维度附近找不到%s。",
+  "message.hptlib.structure_eye.no_safe_position": "找到了%s，但附近没有安全落点。"
+}

@@ -1,0 +1,15 @@
+{
+  "type": "hptlib:structure_eye",
+  "inputs": [
+    {
+      "tag": "hptlib:structure_eyes"
+    }
+  ],
+  "result": "hptlib:structure_eye",
+  "slots": {
+    "abilities": 1
+  },
+  "tools": {
+    "tag": "tconstruct:modifiable/staffs"
+  }
+}
