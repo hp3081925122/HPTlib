@@ -9,7 +9,6 @@
   "message.hptlib.structure_eye.no_target": "This staff has no valid structure target. Apply a structure eye again.",
   "message.hptlib.structure_eye.not_found": "Could not find %s nearby in this dimension.",
   "message.hptlib.structure_eye.no_safe_position": "Found %s, but no safe landing position was available nearby.",
-  "tooltip.hptlib.material_properties": "Hardness %s · Density %s · Toughness %s",
   "tooltip.hptlib.part_bonus": "Part bonus:",
   "structure_eye.hptlib.target.ender_eye": "Eye of Ender (Stronghold)"
 }

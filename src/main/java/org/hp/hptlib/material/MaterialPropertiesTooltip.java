@@ -37,8 +37,6 @@ public final class MaterialPropertiesTooltip {
             return;
         }
         List<Component> tooltip = event.getToolTip();
-        tooltip.add(Component.translatable("tooltip.hptlib.material_properties",
-                NUMBER.format(properties.hardness()), NUMBER.format(properties.density()), NUMBER.format(properties.toughness())).withStyle(ChatFormatting.GRAY));
         PartFormula formula = HptMaterialProperties.getPartFormula(BuiltInRegistries.ITEM.getKey(stack.getItem()));
         if (formula == null) {
             return;
