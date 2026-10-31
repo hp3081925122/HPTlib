@@ -1,6 +1,6 @@
 # HPTlib 1.20.1 Forge
 
-这是一个面向 Minecraft 1.20.1 Forge 的通用附属库模板，使用 Forge 47.4.23、Java 17、Tinkers' Construct 3.11.2.166、Mantle 1.11.104 和 JEI 15.56.0.205。
+这是一个面向 Minecraft 1.20.1 Forge 的通用附属库模板，使用 Forge 47.4.23、Java 17、Tinkers' Construct 3.12.0.220、Mantle 1.11.117 和 JEI 15.56.0.205。
 
 匠魂和 Mantle 是运行时必需依赖；JEI 只作为客户端可选依赖，供共用的 JEI 代码编译和开发客户端运行使用。
 
