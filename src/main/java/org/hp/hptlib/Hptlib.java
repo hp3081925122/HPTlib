@@ -7,7 +7,10 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.hp.hptlib.material.MaterialPropertiesNetwork;
+import org.hp.hptlib.material.MaterialPropertiesTooltip;
 import org.hp.hptlib.structure.StructureEyeModifier;
 import org.hp.hptlib.structure.StructureEyeModifierRecipe;
 import slimeknights.mantle.recipe.helper.LoadableRecipeSerializer;
@@ -34,6 +37,9 @@ public final class Hptlib {
         RECIPE_SERIALIZERS.register(modEventBus);
         modEventBus.addListener(this::registerModifiers);
         MaterialPropertiesNetwork.register();
+        if (FMLEnvironment.dist == Dist.CLIENT) {
+            MaterialPropertiesTooltip.register();
+        }
     }
 
     /** 注册所有由 HPTlib 自身提供的静态匠魂词条。 */

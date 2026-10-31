@@ -22,6 +22,7 @@ import slimeknights.tconstruct.library.tools.part.IToolPart;
 import slimeknights.tconstruct.library.tools.stat.ModifierStatsBuilder;
 
 import java.io.Reader;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -43,7 +44,7 @@ public final class HptMaterialProperties {
     private static volatile Map<ResourceLocation, PartFormula> partFormulas = Map.of();
     private static volatile Map<ResourceLocation, JsonObject> rawProperties = Map.of();
     private static volatile Map<ResourceLocation, JsonObject> rawPartFormulas = Map.of();
-    private static ResourceManager loadedFrom;
+    private static WeakReference<ResourceManager> loadedFrom = new WeakReference<>(null);
 
     private HptMaterialProperties() {}
 
@@ -94,10 +95,11 @@ public final class HptMaterialProperties {
         partFormulas = Collections.unmodifiableMap(newPartFormulas);
         rawProperties = Map.copyOf(syncedProperties);
         rawPartFormulas = Map.copyOf(syncedPartFormulas);
+        LOGGER.info("Received synced material properties for {} materials and {} part formulas", newProperties.size(), newPartFormulas.size());
     }
 
     private static synchronized void load(ResourceManager manager) {
-        if (loadedFrom == manager) {
+        if (loadedFrom.get() == manager) {
             return;
         }
         Map<MaterialId, MaterialProperties> newProperties = new LinkedHashMap<>();
@@ -119,7 +121,7 @@ public final class HptMaterialProperties {
         partFormulas = Collections.unmodifiableMap(newPartFormulas);
         rawProperties = Collections.unmodifiableMap(newRawProperties);
         rawPartFormulas = Collections.unmodifiableMap(newRawPartFormulas);
-        loadedFrom = manager;
+        loadedFrom = new WeakReference<>(manager);
         LOGGER.info("Loaded material properties for {} materials, {} stat formulas and {} part formulas", newProperties.size(), newFormulas.size(), newPartFormulas.size());
     }
 

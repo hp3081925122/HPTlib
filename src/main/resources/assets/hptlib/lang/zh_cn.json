@@ -8,5 +8,7 @@
   "recipe.hptlib.structure_eye.already_bound": "%s 已经绑定了 %s。",
   "message.hptlib.structure_eye.no_target": "这把手杖没有有效的结构定位目标，请重新使用一只定位眼睛进行强化。",
   "message.hptlib.structure_eye.not_found": "当前维度附近找不到%s。",
-  "message.hptlib.structure_eye.no_safe_position": "找到了%s，但附近没有安全落点。"
+  "message.hptlib.structure_eye.no_safe_position": "找到了%s，但附近没有安全落点。",
+  "tooltip.hptlib.material_properties": "硬度 %s · 密度 %s · 韧性 %s",
+  "tooltip.hptlib.part_bonus": "部件加成："
 }
